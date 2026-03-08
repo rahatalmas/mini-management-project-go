@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Hello World — Management System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080808;--s1:#0f0f0f;--s2:#161616;--s3:#1e1e1e;
+  --b1:#2a2a2a;--b2:#383838;--b3:#555;
+  --t1:#f0f0f0;--t2:#a0a0a0;--t3:#606060;
+  --acc:#ffffff;--acc2:#e0e0e0;
+  --red:#ff4444;--green:#44ff88;--yellow:#ffcc44;--blue:#44aaff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
+.mono{font-family:'IBM Plex Mono',monospace}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;display:flex;z-index:200;background:var(--bg)}
+.login-left{flex:1;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;justify-content:space-between;padding:60px;position:relative;overflow:hidden}
+.login-left::before{content:'';position:absolute;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(255,255,255,0.04) 0%,transparent 70%);pointer-events:none}
+.login-grid{position:absolute;inset:0;background-image:linear-gradient(var(--b1) 1px,transparent 1px),linear-gradient(90deg,var(--b1) 1px,transparent 1px);background-size:60px 60px;opacity:0.3}
+.login-right{width:480px;display:flex;align-items:center;justify-content:center;padding:60px;flex-shrink:0}
+.login-box{width:100%}
+.brand-mark{font-size:48px;font-weight:800;letter-spacing:-3px;line-height:1;margin-bottom:6px}
+.brand-mark span{color:var(--t3)}
+.tagline{font-size:13px;color:var(--t3);letter-spacing:0.15em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace}
+.feature-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--b2);border-radius:100px;font-size:12px;color:var(--t2);margin-bottom:8px}
+.feature-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+/* ── SIDEBAR ── */
+#sidebar{width:220px;min-height:100vh;background:var(--s1);border-right:1px solid var(--b1);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:50}
+.nav-section{padding:8px 12px 4px;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--t3);font-family:'IBM Plex Mono',monospace;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;border-radius:6px;margin:1px 8px;color:var(--t2);font-size:13px;font-weight:500;transition:all .15s;position:relative}
+.nav-item:hover{background:var(--s2);color:var(--t1)}
+.nav-item.active{background:var(--acc);color:var(--bg)!important;font-weight:600}
+.nav-item .ni{width:16px;text-align:center;font-size:14px}
+#main{margin-left:220px;padding:36px;min-height:100vh}
+
+/* ── CARDS ── */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:24px}
+.card-sm{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:16px}
+.stat-card{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:20px;position:relative;overflow:hidden;transition:border-color .2s}
+.stat-card:hover{border-color:var(--b2)}
+
+/* ── TABLE ── */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:11px 16px;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--b1);font-family:'IBM Plex Mono',monospace}
+td{padding:14px 16px;border-bottom:1px solid rgba(42,42,42,0.6);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+
+/* ── INPUTS ── */
+input,select,textarea{background:var(--s2);border:1px solid var(--b1);color:var(--t1);border-radius:6px;padding:10px 14px;font-family:'Syne',sans-serif;font-size:13px;outline:none;transition:border-color .15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--b3)}
+select option{background:var(--s2)}
+label{font-size:11px;color:var(--t3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.08em;font-family:'IBM Plex Mono',monospace}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:6px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--acc);color:var(--bg)}
+.btn-primary:hover{background:var(--acc2)}
+.btn-ghost{background:transparent;color:var(--t2);border:1px solid var(--b1)}
+.btn-ghost:hover{border-color:var(--b3);color:var(--t1)}
+.btn-danger{background:rgba(255,68,68,0.1);color:var(--red);border:1px solid rgba(255,68,68,0.2)}
+.btn-danger:hover{background:rgba(255,68,68,0.2)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-xs{padding:4px 10px;font-size:11px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:4px;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;letter-spacing:0.03em}
+.badge-admin{background:rgba(240,240,240,0.12);color:var(--t1);border:1px solid var(--b2)}
+.badge-manager{background:rgba(255,204,68,0.12);color:var(--yellow);border:1px solid rgba(255,204,68,0.2)}
+.badge-viewer{background:rgba(68,170,255,0.1);color:var(--blue);border:1px solid rgba(68,170,255,0.15)}
+.badge-success{background:rgba(68,255,136,0.1);color:var(--green);border:1px solid rgba(68,255,136,0.15)}
+.badge-failed{background:rgba(255,68,68,0.1);color:var(--red);border:1px solid rgba(255,68,68,0.15)}
+.badge-active{background:rgba(68,255,136,0.1);color:var(--green);border:1px solid rgba(68,255,136,0.15)}
+.badge-inactive{background:rgba(96,96,96,0.2);color:var(--t3);border:1px solid var(--b1)}
+.badge-resource{background:rgba(68,170,255,0.08);color:var(--blue);border:1px solid rgba(68,170,255,0.12)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal{background:var(--s1);border:1px solid var(--b2);border-radius:10px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal-lg{max-width:680px}
+
+/* ── PAGE ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 18px;border-radius:6px;font-size:13px;font-weight:500;animation:toastIn .25s ease;display:flex;align-items:center;gap:10px;min-width:280px}
+.toast-success{background:var(--s2);border:1px solid rgba(68,255,136,0.3);color:var(--green)}
+.toast-error{background:var(--s2);border:1px solid rgba(255,68,68,0.3);color:var(--red)}
+.toast-info{background:var(--s2);border:1px solid var(--b2);color:var(--t1)}
+@keyframes toastIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── MISC ── */
+.divider{height:1px;background:var(--b1);margin:12px 0}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.page-title{font-size:24px;font-weight:700;letter-spacing:-0.5px}
+.page-sub{color:var(--t3);font-size:13px;margin-top:3px}
+.section-label{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--t3);font-family:'IBM Plex Mono',monospace;margin-bottom:12px}
+
+/* ── ACTIVITY LOG ICONS ── */
+.act-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.act-login{background:rgba(68,255,136,0.1);border:1px solid rgba(68,255,136,0.15)}
+.act-logout{background:rgba(96,96,96,0.15);border:1px solid var(--b1)}
+.act-create{background:rgba(68,170,255,0.1);border:1px solid rgba(68,170,255,0.15)}
+.act-update{background:rgba(255,204,68,0.1);border:1px solid rgba(255,204,68,0.15)}
+.act-delete{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.15)}
+.act-bulk{background:rgba(160,100,255,0.1);border:1px solid rgba(160,100,255,0.15)}
+.act-profile{background:rgba(240,240,240,0.08);border:1px solid var(--b1)}
+.act-default{background:var(--s2);border:1px solid var(--b1)}
+
+/* ── AVATAR ── */
+.avatar{border-radius:50%;object-fit:cover;background:var(--s2);border:2px solid var(--b1);display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;flex-shrink:0}
+.avatar img{width:100%;height:100%;object-fit:cover}
+</style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- ═══════════════════════════ LOGIN ═══════════════════════════ -->
+<div id="login-screen">
+  <div class="login-left">
+    <div class="login-grid"></div>
+    <div style="position:relative;z-index:1">
+      <div class="brand-mark">Hello<span></span> World</div>
+      <div class="tagline">Management System</div>
+    </div>
+    <div style="position:relative;z-index:1">
+      <h2 style="font-size:32px;font-weight:700;line-height:1.2;margin-bottom:20px;letter-spacing:-1px">
+        Manage everything.<br><span style="color:var(--t3)">Securely.</span>
+      </h2>
+      <p style="color:var(--t3);font-size:14px;line-height:1.7;max-width:380px;margin-bottom:32px">
+        Role-based access control, real-time activity monitoring, bulk user management — all in one place.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="feature-pill"><span class="dot"></span>JWT Token Authentication</div>
+        <div class="feature-pill"><span class="dot" style="background:var(--blue)"></span>Role-Based Access Control</div>
+        <div class="feature-pill"><span class="dot" style="background:var(--yellow)"></span>Full Activity Monitoring</div>
+        <div class="feature-pill"><span class="dot" style="background:var(--t2)"></span>Bulk User Operations</div>
+      </div>
+    </div>
+    <div style="position:relative;z-index:1;color:var(--t3);font-size:12px;font-family:'IBM Plex Mono',monospace">
+      Built with Go · Gin · GORM · MySQL
+    </div>
+  </div>
+  <div class="login-right">
+    <div class="login-box">
+      <div style="margin-bottom:32px">
+        <div style="font-size:22px;font-weight:700;margin-bottom:6px">Sign in</div>
+        <div style="color:var(--t3);font-size:13px">Enter your credentials to continue</div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label>Username or Email</label>
+        <input type="text" id="login-username" placeholder="admin" autocomplete="username"/>
+      </div>
+      <div style="margin-bottom:24px">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:14px" onclick="doLogin()">
+        Sign in →
+      </button>
+      <div style="margin-top:20px;padding:14px;background:var(--s2);border-radius:6px;border:1px solid var(--b1)">
+        <div style="font-size:11px;color:var(--t3);font-family:'IBM Plex Mono',monospace;margin-bottom:4px">DEFAULT CREDENTIALS</div>
+        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace">admin <span style="color:var(--t3)">/</span> admin123</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ APP ═══════════════════════════ -->
+<div id="app" style="display:none">
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div style="padding:20px 16px 14px;border-bottom:1px solid var(--b1)">
+      <div style="font-size:16px;letter-spacing:-0.5px">Hello World</div>
+      <div style="font-size:10px;color:var(--t3);font-family:'IBM Plex Mono',monospace;margin-top:2px">v1.0</div>
+    </div>
+    <nav style="padding:8px 0;flex:1;overflow-y:auto">
+      <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard')"><span class="ni">◈</span>Dashboard</div>
+      <div class="nav-item" id="nav-products" onclick="showPage('products')"><span class="ni">⬡</span>Products</div>
+      <div class="nav-section">Security</div>
+      <div class="nav-item" id="nav-users" onclick="showPage('users')"><span class="ni">◉</span>Users</div>
+      <div class="nav-item" id="nav-roles" onclick="showPage('roles')"><span class="ni">◈</span>Roles & Perms</div>
+      <div class="nav-item" id="nav-groups" onclick="showPage('groups')"><span class="ni">⬡</span>Groups</div>
+      <div class="nav-item" id="nav-logs" onclick="showPage('logs')"><span class="ni">◎</span>Activity Logs</div>
+    </nav>
+    <div style="border-top:1px solid var(--b1);padding:12px">
+      <div id="sidebar-profile" onclick="showPage('profile')" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:6px;cursor:pointer;transition:background .15s;margin-bottom:8px" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
+        <div class="avatar" id="sidebar-avatar" style="width:34px;height:34px;font-size:13px;background:var(--s3);border-color:var(--b1)">A</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="sidebar-name">Admin</div>
+          <div style="font-size:11px;color:var(--t3);font-family:'IBM Plex Mono',monospace" id="sidebar-role">admin</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <div id="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div><div class="page-title">Dashboard</div><div class="page-sub">System overview</div></div>
+        <div class="mono" style="font-size:11px;color:var(--t3)" id="clock"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+        <div class="stat-card"><div style="font-size:10px;color:var(--t3);font-family:'IBM Plex Mono',monospace;margin-bottom:10px;letter-spacing:0.1em">USERS</div><div style="font-size:30px;font-weight:700" id="stat-users">—</div><div style="font-size:11px;color:var(--t3);margin-top:4px">registered</div></div>
+        <div class="stat-card"><div style="font-size:10px;color:var(--t3);font-family:'IBM Plex Mono',monospace;margin-bottom:10px;letter-spacing:0.1em">PRODUCTS</div><div style="font-size:30px;font-weight:700" id="stat-products">—</div><div style="font-size:11px;color:var(--t3);margin-top:4px">in catalog</div></div>
+        <div class="stat-card"><div style="font-size:10px;color:var(--green);font-family:'IBM Plex Mono',monospace;margin-bottom:10px;letter-spacing:0.1em">SUCCESS LOGINS</div><div style="font-size:30px;font-weight:700;color:var(--green)" id="stat-success">—</div><div style="font-size:11px;color:var(--t3);margin-top:4px">authenticated</div></div>
+        <div class="stat-card"><div style="font-size:10px;color:var(--red);font-family:'IBM Plex Mono',monospace;margin-bottom:10px;letter-spacing:0.1em">FAILED LOGINS</div><div style="font-size:30px;font-weight:700;color:var(--red)" id="stat-failed">—</div><div style="font-size:11px;color:var(--t3);margin-top:4px">blocked</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:18px 20px;border-bottom:1px solid var(--b1)"><div style="font-size:13px;font-weight:600">Recent Activity</div></div>
+          <div id="dash-activity" style="padding:0"></div>
+        </div>
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:16px">System</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--s2);border-radius:6px"><span style="color:var(--t3);font-size:12px">Roles</span><span class="mono" style="font-size:12px" id="info-roles">—</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--s2);border-radius:6px"><span style="color:var(--t3);font-size:12px">Groups</span><span class="mono" style="font-size:12px" id="info-groups">—</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--s2);border-radius:6px"><span style="color:var(--t3);font-size:12px">Log Events</span><span class="mono" style="font-size:12px" id="info-logs">—</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--s2);border-radius:6px"><span style="color:var(--t3);font-size:12px">Auth</span><span class="mono" style="font-size:12px;color:var(--t1)">JWT HS256</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--s2);border-radius:6px"><span style="color:var(--t3);font-size:12px">Stack</span><span class="mono" style="font-size:12px;color:var(--t1)">Go + Gin</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PRODUCTS ── -->
+    <div id="page-products" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Products</div><div class="page-sub">Manage product catalog</div></div>
+        <button class="btn btn-primary" id="btn-add-product" onclick="openModal('modal-product')">+ Add Product</button>
+      </div>
+      <div class="card-sm" style="margin-bottom:12px">
+        <div style="display:flex;gap:10px">
+          <div style="flex:1;position:relative">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:12px">⌕</span>
+            <input type="text" id="product-search" placeholder="Search name or SKU…" style="padding-left:34px" oninput="filterProducts()">
+          </div>
+          <select id="product-cat-filter" style="width:170px" onchange="filterProducts()">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="tbl-products"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div id="page-users" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Users</div><div class="page-sub">Manage system users and access</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="openModal('modal-bulk')">Bulk Create</button>
+          <button class="btn btn-primary" onclick="openModal('modal-add-user')">+ Add User</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table><thead><tr><th>User</th><th>Email</th><th>Roles</th><th>Groups</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+        <tbody id="tbl-users"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ── ROLES ── -->
+    <div id="page-roles" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Roles & Permissions</div><div class="page-sub">Define access control</div></div>
+        <button class="btn btn-primary" onclick="openModal('modal-add-role')">+ New Role</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:16px">Roles</div><div id="roles-list"></div></div>
+        <div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:16px">All Permissions</div><div id="perms-list"></div></div>
+      </div>
+    </div>
+
+    <!-- ── GROUPS ── -->
+    <div id="page-groups" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Groups</div><div class="page-sub">Team organization</div></div>
+        <button class="btn btn-primary" onclick="openModal('modal-add-group')">+ New Group</button>
+      </div>
+      <div id="groups-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
+    </div>
+
+    <!-- ── ACTIVITY LOGS ── -->
+    <div id="page-logs" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Activity Logs</div><div class="page-sub">Full audit trail — all actions</div></div>
+        <div style="display:flex;gap:8px">
+          <select id="log-resource" style="width:140px" onchange="loadLogs()">
+            <option value="">All Resources</option>
+            <option value="auth">Auth</option>
+            <option value="product">Products</option>
+            <option value="user">Users</option>
+            <option value="role">Roles</option>
+            <option value="group">Groups</option>
+            <option value="profile">Profile</option>
+          </select>
+          <select id="log-status" style="width:130px" onchange="loadLogs()">
+            <option value="">All Status</option>
+            <option value="success">Success</option>
+            <option value="failed">Failed</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadLogs()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Resource</th><th>Detail</th><th>Status</th><th>IP</th></tr></thead>
+        <tbody id="tbl-logs"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ── PROFILE ── -->
+    <div id="page-profile" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Profile</div><div class="page-sub">Manage your account</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:20px;max-width:900px">
+        <!-- Avatar Card -->
+        <div class="card" style="text-align:center">
+          <div style="margin-bottom:20px">
+            <div id="profile-avatar-display" class="avatar" style="width:100px;height:100px;margin:0 auto 16px;font-size:36px;background:var(--s3)">A</div>
+            <div style="font-size:17px;font-weight:700" id="profile-display-name">—</div>
+            <div class="mono" style="font-size:12px;color:var(--t3);margin-top:4px" id="profile-display-username">—</div>
+            <div style="margin-top:8px" id="profile-display-roles"></div>
+          </div>
+          <div class="divider"></div>
+          <div style="margin-top:16px">
+            <label>Profile Picture</label>
+            <div style="border:1px dashed var(--b2);border-radius:6px;padding:20px;text-align:center;cursor:pointer;transition:border-color .15s;margin-top:6px" onclick="document.getElementById('avatar-file').click()" id="avatar-drop-zone" onmouseover="this.style.borderColor='var(--b3)'" onmouseout="this.style.borderColor='var(--b2)'">
+              <div style="font-size:20px;margin-bottom:6px">↑</div>
+              <div style="font-size:12px;color:var(--t3)">Click to upload</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:2px">JPG, PNG up to 2MB</div>
+            </div>
+            <input type="file" id="avatar-file" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
+          </div>
+          <div style="margin-top:16px;padding:12px;background:var(--s2);border-radius:6px;text-align:left">
+            <div style="font-size:11px;color:var(--t3);font-family:'IBM Plex Mono',monospace;margin-bottom:6px">ACCOUNT INFO</div>
+            <div style="font-size:12px;color:var(--t2);margin-bottom:4px">Member since: <span id="profile-since" style="color:var(--t1)">—</span></div>
+            <div style="font-size:12px;color:var(--t2)">Status: <span class="badge badge-active" style="font-size:10px">Active</span></div>
+          </div>
+        </div>
+        <!-- Edit Form -->
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:20px">Edit Profile</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div><label>First Name</label><input type="text" id="prof-fn" placeholder="First name"/></div>
+            <div><label>Last Name</label><input type="text" id="prof-ln" placeholder="Last name"/></div>
+            <div style="grid-column:1/-1"><label>Email</label><input type="email" id="prof-email" placeholder="email@example.com"/></div>
+            <div style="grid-column:1/-1"><label>Bio</label><textarea id="prof-bio" rows="3" placeholder="Tell us about yourself…"></textarea></div>
+          </div>
+          <div class="divider" style="margin:20px 0"></div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:16px">Change Password</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div><label>New Password</label><input type="password" id="prof-pw" placeholder="Leave blank to keep"/></div>
+            <div><label>Confirm Password</label><input type="password" id="prof-pw2" placeholder="Confirm new password"/></div>
+          </div>
+          <div style="margin-top:20px;display:flex;justify-content:flex-end;gap:8px">
+            <button class="btn btn-ghost" onclick="loadProfile()">Reset</button>
+            <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+
+<!-- Add/Edit Product -->
+<div id="modal-product" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <div style="font-size:16px;font-weight:700" id="modal-product-title">Add Product</div>
+      <button onclick="closeModal('modal-product')" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:20px;line-height:1">×</button>
+    </div>
+    <input type="hidden" id="ep-id"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="grid-column:1/-1"><label>Product Name *</label><input type="text" id="ep-name" placeholder="e.g. Laptop Pro X1"/></div>
+      <div><label>SKU *</label><input type="text" id="ep-sku" placeholder="LAP-001"/></div>
+      <div><label>Category</label><input type="text" id="ep-cat" placeholder="Electronics"/></div>
+      <div><label>Price ($)</label><input type="number" id="ep-price" placeholder="0.00" step="0.01"/></div>
+      <div><label>Stock</label><input type="number" id="ep-stock" placeholder="0"/></div>
+      <div><label>Status</label><select id="ep-active"><option value="true">Active</option><option value="false">Inactive</option></select></div>
+      <div style="grid-column:1/-1"><label>Description</label><textarea id="ep-desc" rows="3" placeholder="Product description…"></textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('modal-product')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add User -->
+<div id="modal-add-user" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <div style="font-size:16px;font-weight:700">Add User</div>
+      <button onclick="closeModal('modal-add-user')" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:20px;line-height:1">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div><label>First Name</label><input type="text" id="u-fn"/></div>
+      <div><label>Last Name</label><input type="text" id="u-ln"/></div>
+      <div><label>Username *</label><input type="text" id="u-un"/></div>
+      <div><label>Email *</label><input type="email" id="u-em"/></div>
+      <div style="grid-column:1/-1"><label>Password *</label><input type="password" id="u-pw" placeholder="Min 6 characters"/></div>
+      <div><label>Role</label><select id="u-role"><option value="">No role</option></select></div>
+      <div><label>Group</label><select id="u-group"><option value="">No group</option></select></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-user')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUser()">Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Users -->
+<div id="modal-bulk" class="modal-overlay" style="display:none">
+  <div class="modal modal-lg">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:16px;font-weight:700">Bulk Create Users</div>
+      <button onclick="closeModal('modal-bulk')" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:20px;line-height:1">×</button>
+    </div>
+    <div style="background:var(--s2);border-radius:6px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--t3);font-family:'IBM Plex Mono',monospace;line-height:1.6">
+      Required per user: <span style="color:var(--t1)">username, email, password</span> &nbsp;·&nbsp; Optional: first_name, last_name, role_ids[], group_ids[]
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <label style="margin:0">JSON Payload</label>
+      <button class="btn btn-ghost btn-xs" onclick="loadBulkTemplate()">Load Template</button>
+    </div>
+    <textarea id="bulk-json" rows="12" style="font-family:'IBM Plex Mono',monospace;font-size:12px" placeholder='[{"username":"alice","email":"alice@co.com","password":"pass123"}]'></textarea>
+    <div id="bulk-result" style="margin-top:12px;display:none"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('modal-bulk')">Cancel</button>
+      <button class="btn btn-primary" onclick="bulkCreateUsers()">Create Users</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Role -->
+<div id="modal-add-role" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <div style="font-size:16px;font-weight:700">Create Role</div>
+      <button onclick="closeModal('modal-add-role')" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:20px;line-height:1">×</button>
+    </div>
+    <div style="margin-bottom:14px"><label>Role Name *</label><input type="text" id="r-name" placeholder="e.g. editor"/></div>
+    <div style="margin-bottom:14px"><label>Description</label><input type="text" id="r-desc"/></div>
+    <label>Permissions</label>
+    <div id="perm-checks" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;max-height:220px;overflow-y:auto"></div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-role')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRole()">Create Role</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Group -->
+<div id="modal-add-group" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <div style="font-size:16px;font-weight:700">Create Group</div>
+      <button onclick="closeModal('modal-add-group')" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:20px;line-height:1">×</button>
+    </div>
+    <div style="margin-bottom:14px"><label>Group Name *</label><input type="text" id="g-name"/></div>
+    <div style="margin-bottom:14px"><label>Description</label><input type="text" id="g-desc"/></div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-group')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveGroup()">Create Group</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let token = localStorage.getItem('auth_token') || '';
+let currentUser = null;
+let allProducts = [], allRoles = [], allGroups = [], allPerms = [];
+const API = '/api/v1';
+
+// ══════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════
+function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(API + path, { headers, ...opts }).then(async r => {
+    if (r.status === 401) { doLogout(); throw new Error('Unauthorized'); }
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Request failed');
+    return d;
+  });
+}
+
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  const icon = { success: '✓', error: '✕', info: '·' }[type] || '·';
+  el.innerHTML = `<span style="font-family:'IBM Plex Mono',monospace">${icon}</span> ${msg}`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3800);
+}
+
+function fd(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function roleBadge(r) {
+  const m = { admin: 'badge-admin', manager: 'badge-manager', viewer: 'badge-viewer' };
+  return `<span class="badge ${m[r] || 'badge-viewer'}">${r}</span>`;
+}
+
+function actIcon(action) {
+  const map = {
+    login: { cls: 'act-login', icon: '→' },
+    logout: { cls: 'act-logout', icon: '←' },
+    create: { cls: 'act-create', icon: '+' },
+    bulk_create: { cls: 'act-bulk', icon: '⬡' },
+    update: { cls: 'act-update', icon: '~' },
+    delete: { cls: 'act-delete', icon: '×' },
+    upload: { cls: 'act-profile', icon: '↑' },
+    profile: { cls: 'act-profile', icon: '◉' },
+  };
+  const a = map[action] || { cls: 'act-default', icon: '·' };
+  return `<div class="act-icon ${a.cls}">${a.icon}</div>`;
+}
+
+function renderAvatar(user, size = 36) {
+  const initials = ((user.first_name?.[0] || '') + (user.last_name?.[0] || '') || user.username?.[0] || '?').toUpperCase();
+  if (user.avatar && user.avatar.startsWith('data:')) {
+    return `<div class="avatar" style="width:${size}px;height:${size}px"><img src="${user.avatar}" alt="avatar"></div>`;
+  }
+  return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${Math.floor(size * 0.35)}px;background:var(--s3)">${initials}</div>`;
+}
+
+function openModal(id) {
+  if (id === 'modal-add-user') {
+    document.getElementById('u-role').innerHTML = '<option value="">No role</option>' + allRoles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+    document.getElementById('u-group').innerHTML = '<option value="">No group</option>' + allGroups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+  }
+  document.getElementById(id).style.display = 'flex';
+}
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) e.target.style.display = 'none';
+});
+
+// ══════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!username || !password) { toast('Enter credentials', 'error'); return; }
+  try {
+    const data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) });
+    token = data.token;
+    currentUser = data.user;
+    localStorage.setItem('auth_token', token);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initApp();
+    toast(`Welcome back, ${currentUser.first_name || currentUser.username}!`, 'success');
+  } catch (e) { toast(e.message || 'Login failed', 'error'); }
+}
+
+async function doLogout() {
+  try { await api('/auth/logout', { method: 'POST' }); } catch (e) {}
+  token = ''; currentUser = null;
+  localStorage.removeItem('auth_token');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-password').value = '';
+}
+
+async function checkAuth() {
+  if (!token) return;
+  try {
+    currentUser = await api('/auth/me');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initApp();
+  } catch (e) { token = ''; localStorage.removeItem('auth_token'); }
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+async function initApp() {
+  updateSidebarUser();
+  setInterval(() => { const e = document.getElementById('clock'); if (e) e.textContent = new Date().toLocaleTimeString(); }, 1000);
+  await loadMeta();
+  loadDashboard();
+}
+
+function updateSidebarUser() {
+  if (!currentUser) return;
+  const roles = (currentUser.roles || []).map(r => r.name);
+  const initials = ((currentUser.first_name?.[0] || '') + (currentUser.last_name?.[0] || '') || currentUser.username?.[0] || 'U').toUpperCase();
+  const avatarEl = document.getElementById('sidebar-avatar');
+  if (currentUser.avatar && currentUser.avatar.startsWith('data:')) {
+    avatarEl.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;object-fit:cover">`;
+  } else {
+    avatarEl.textContent = initials;
+  }
+  document.getElementById('sidebar-name').textContent = currentUser.first_name || currentUser.username;
+  document.getElementById('sidebar-role').textContent = roles[0] || 'user';
+
+  // Hide restricted nav
+  const isAdmin = roles.includes('admin');
+  ['nav-roles', 'nav-logs'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = isAdmin ? '' : 'none';
+  });
+  const canCreateProduct = isAdmin || roles.includes('manager');
+  const btnAdd = document.getElementById('btn-add-product');
+  if (btnAdd) btnAdd.style.display = canCreateProduct ? '' : 'none';
+}
+
+async function loadMeta() {
+  try {
+    [allRoles, allGroups, allPerms] = await Promise.all([
+      api('/roles').catch(() => []),
+      api('/groups').catch(() => []),
+      api('/permissions').catch(() => [])
+    ]);
+    document.getElementById('perm-checks').innerHTML = allPerms.map(p => `
+      <label style="display:flex;align-items:center;gap:7px;padding:8px 10px;background:var(--s2);border-radius:5px;cursor:pointer;font-size:0">
+        <input type="checkbox" value="${p.id}" name="perm-check" style="width:13px;height:13px;accent-color:var(--acc);flex-shrink:0">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--t1)">${p.name}</span>
+      </label>`).join('');
+  } catch (e) {}
+}
+
+// ══════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name)?.classList.add('active');
+  document.getElementById('nav-' + name)?.classList.add('active');
+  if (name === 'products') loadProducts();
+  else if (name === 'users') loadUsers();
+  else if (name === 'roles') loadRoles();
+  else if (name === 'groups') loadGroups();
+  else if (name === 'logs') loadLogs();
+  else if (name === 'dashboard') loadDashboard();
+  else if (name === 'profile') loadProfile();
+}
+
+// ══════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    const d = await api('/dashboard');
+    document.getElementById('stat-users').textContent = d.users;
+    document.getElementById('stat-products').textContent = d.products;
+    document.getElementById('stat-success').textContent = d.success_logins;
+    document.getElementById('stat-failed').textContent = d.failed_logins;
+    document.getElementById('info-roles').textContent = d.roles;
+    document.getElementById('info-groups').textContent = d.groups;
+    document.getElementById('info-logs').textContent = d.total_logs;
+
+    const logs = d.recent_logs || [];
+    document.getElementById('dash-activity').innerHTML = logs.slice(0, 10).map(l => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--b1)">
+        ${actIcon(l.action)}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600">${l.user?.username || 'system'} <span style="color:var(--t3);font-weight:400">${l.action}</span> ${l.resource_name ? `<span style="color:var(--t2)">${l.resource_name}</span>` : ''}</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.detail || '—'}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+          <span class="mono" style="font-size:10px;color:var(--t3)">${fd(l.created_at)}</span>
+          <span class="badge ${l.status === 'success' ? 'badge-success' : 'badge-failed'}" style="font-size:10px">${l.status}</span>
+        </div>
+      </div>`).join('') || '<div style="padding:24px;color:var(--t3);font-size:13px;text-align:center">No activity yet</div>';
+  } catch (e) { toast('Failed to load dashboard', 'error'); }
+}
+
+// ══════════════════════════════════════════════
+//  PRODUCTS
+// ══════════════════════════════════════════════
+async function loadProducts() {
+  try {
+    allProducts = await api('/products');
+    const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
+    const sel = document.getElementById('product-cat-filter');
+    sel.innerHTML = '<option value="">All Categories</option>' + cats.map(c => `<option>${c}</option>`).join('');
+    renderProducts(allProducts);
+  } catch (e) { toast('Failed to load products', 'error'); }
+}
+
+function filterProducts() {
+  const q = document.getElementById('product-search').value.toLowerCase();
+  const cat = document.getElementById('product-cat-filter').value;
+  renderProducts(allProducts.filter(p =>
+    (!q || p.name.toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q)) &&
+    (!cat || p.category === cat)
+  ));
+}
+
+function renderProducts(products) {
+  const roles = (currentUser?.roles || []).map(r => r.name);
+  const canEdit = roles.includes('admin') || roles.includes('manager');
+  const canDel = roles.includes('admin');
+  document.getElementById('tbl-products').innerHTML = products.map(p => `
+    <tr>
+      <td>
+        <div style="font-weight:600;font-size:13px">${p.name}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${(p.description || '').slice(0, 48)}${p.description?.length > 48 ? '…' : ''}</div>
+      </td>
+      <td><span class="mono" style="font-size:11px;color:var(--t2)">${p.sku}</span></td>
+      <td><span style="font-size:12px;color:var(--t2)">${p.category || '—'}</span></td>
+      <td><span style="font-weight:600;font-size:13px">$${parseFloat(p.price).toFixed(2)}</span></td>
+      <td><span class="mono" style="font-size:12px">${p.stock}</span></td>
+      <td><span class="badge ${p.is_active ? 'badge-active' : 'badge-inactive'}">${p.is_active ? 'active' : 'inactive'}</span></td>
+      <td>
+        <div style="display:flex;gap:5px">
+          ${canEdit ? `<button class="btn btn-ghost btn-xs" onclick="openEditProduct(${p.id})">Edit</button>` : ''}
+          ${canDel ? `<button class="btn btn-danger btn-xs" onclick="deleteProduct(${p.id})">Del</button>` : ''}
+        </div>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:32px">No products</td></tr>';
+}
+
+function openAddProduct() {
+  document.getElementById('ep-id').value = '';
+  document.getElementById('modal-product-title').textContent = 'Add Product';
+  ['ep-name','ep-sku','ep-cat','ep-price','ep-stock','ep-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ep-active').value = 'true';
+  document.getElementById('ep-sku').disabled = false;
+  openModal('modal-product');
+}
+
+function openEditProduct(id) {
+  const p = allProducts.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('ep-id').value = p.id;
+  document.getElementById('modal-product-title').textContent = 'Edit Product';
+  document.getElementById('ep-name').value = p.name;
+  document.getElementById('ep-sku').value = p.sku;
+  document.getElementById('ep-sku').disabled = true;
+  document.getElementById('ep-cat').value = p.category || '';
+  document.getElementById('ep-price').value = p.price;
+  document.getElementById('ep-stock').value = p.stock;
+  document.getElementById('ep-desc').value = p.description || '';
+  document.getElementById('ep-active').value = String(p.is_active);
+  openModal('modal-product');
+}
+
+async function saveProduct() {
+  const id = document.getElementById('ep-id').value;
+  const name = document.getElementById('ep-name').value;
+  const sku = document.getElementById('ep-sku').value;
+  if (!name) { toast('Enter product name', 'error'); return; }
+  try {
+    if (id) {
+      await api('/products/' + id, { method: 'PUT', body: JSON.stringify({
+        name, category: document.getElementById('ep-cat').value,
+        price: parseFloat(document.getElementById('ep-price').value),
+        stock: parseInt(document.getElementById('ep-stock').value) || 0,
+        description: document.getElementById('ep-desc').value,
+        is_active: document.getElementById('ep-active').value === 'true'
+      })});
+      toast('Product updated', 'success');
+    } else {
+      if (!sku) { toast('Enter SKU', 'error'); return; }
+      await api('/products', { method: 'POST', body: JSON.stringify({
+        name, sku, category: document.getElementById('ep-cat').value,
+        price: parseFloat(document.getElementById('ep-price').value),
+        stock: parseInt(document.getElementById('ep-stock').value) || 0,
+        description: document.getElementById('ep-desc').value
+      })});
+      toast('Product created', 'success');
+    }
+    closeModal('modal-product');
+    loadProducts();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// Override open button
+document.getElementById('btn-add-product')?.addEventListener('click', openAddProduct);
+
+async function deleteProduct(id) {
+  if (!confirm('Delete this product?')) return;
+  try {
+    await api('/products/' + id, { method: 'DELETE' });
+    toast('Product deleted', 'success');
+    loadProducts();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════
+//  USERS
+// ══════════════════════════════════════════════
+async function loadUsers() {
+  try {
+    const users = await api('/users');
+    const isAdmin = (currentUser?.roles || []).map(r => r.name).includes('admin');
+    document.getElementById('tbl-users').innerHTML = users.map(u => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            ${renderAvatar(u, 34)}
+            <div>
+              <div style="font-weight:600;font-size:13px">${u.first_name || ''} ${u.last_name || ''}</div>
+              <div class="mono" style="font-size:11px;color:var(--t3)">${u.username}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-size:12px;color:var(--t2)">${u.email}</td>
+        <td>${(u.roles || []).map(r => roleBadge(r.name)).join(' ')}</td>
+        <td style="font-size:12px;color:var(--t2)">${(u.groups || []).map(g => g.name).join(', ') || '—'}</td>
+        <td><span class="badge ${u.is_active ? 'badge-active' : 'badge-inactive'}">${u.is_active ? 'active' : 'inactive'}</span></td>
+        <td class="mono" style="font-size:11px;color:var(--t3)">${fd(u.created_at)}</td>
+        <td>${isAdmin && u.id !== currentUser?.id ? `<button class="btn btn-danger btn-xs" onclick="deleteUser(${u.id})">Delete</button>` : ''}</td>
+      </tr>`).join('');
+  } catch (e) { toast('Failed to load users', 'error'); }
+}
+
+async function saveUser() {
+  const roleId = document.getElementById('u-role').value;
+  const groupId = document.getElementById('u-group').value;
+  const data = {
+    username: document.getElementById('u-un').value,
+    email: document.getElementById('u-em').value,
+    password: document.getElementById('u-pw').value,
+    first_name: document.getElementById('u-fn').value,
+    last_name: document.getElementById('u-ln').value,
+    role_ids: roleId ? [parseInt(roleId)] : [],
+    group_ids: groupId ? [parseInt(groupId)] : []
+  };
+  if (!data.username || !data.email || !data.password) { toast('Fill required fields', 'error'); return; }
+  try {
+    await api('/users', { method: 'POST', body: JSON.stringify(data) });
+    closeModal('modal-add-user');
+    toast('User created', 'success');
+    loadUsers();
+    ['u-fn','u-ln','u-un','u-em','u-pw'].forEach(id => document.getElementById(id).value = '');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function deleteUser(id) {
+  if (!confirm('Delete this user?')) return;
+  try {
+    await api('/users/' + id, { method: 'DELETE' });
+    toast('User deleted', 'success');
+    loadUsers();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function loadBulkTemplate() {
+  document.getElementById('bulk-json').value = JSON.stringify([
+    { username: 'alice', email: 'alice@example.com', password: 'Alice@123', first_name: 'Alice', last_name: 'Smith', role_ids: [3] },
+    { username: 'bob', email: 'bob@example.com', password: 'Bob@1234', first_name: 'Bob', last_name: 'Jones', role_ids: [2] },
+    { username: 'charlie', email: 'charlie@example.com', password: 'Charlie@1', first_name: 'Charlie', last_name: 'Brown' }
+  ], null, 2);
+}
+
+async function bulkCreateUsers() {
+  let users;
+  try { users = JSON.parse(document.getElementById('bulk-json').value); }
+  catch (e) { toast('Invalid JSON', 'error'); return; }
+  try {
+    const result = await api('/users/bulk', { method: 'POST', body: JSON.stringify({ users }) });
+    const resEl = document.getElementById('bulk-result');
+    resEl.style.display = 'block';
+    resEl.innerHTML = `
+      <div style="padding:14px;background:var(--s2);border-radius:6px;font-size:12px;font-family:'IBM Plex Mono',monospace">
+        <div style="margin-bottom:10px;display:flex;gap:8px">
+          <span class="badge badge-success">✓ ${result.success} created</span>
+          ${result.failed > 0 ? `<span class="badge badge-failed">✕ ${result.failed} failed</span>` : ''}
+        </div>
+        ${result.results.map(r => `
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--b1)">
+            <span>${r.username}</span>
+            <span style="color:${r.status === 'created' ? 'var(--green)' : 'var(--red)'}">${r.status}${r.error ? ': ' + r.error : ''}</span>
+          </div>`).join('')}
+      </div>`;
+    toast(`Bulk: ${result.success} created, ${result.failed} failed`, result.failed > 0 ? 'info' : 'success');
+    loadUsers();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════
+//  ROLES
+// ══════════════════════════════════════════════
+async function loadRoles() {
+  try {
+    [allRoles, allPerms] = await Promise.all([api('/roles'), api('/permissions')]);
+    document.getElementById('roles-list').innerHTML = allRoles.map(r => `
+      <div style="padding:14px;background:var(--s2);border-radius:6px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          ${roleBadge(r.name)}
+          <span class="mono" style="font-size:10px;color:var(--t3)">${(r.permissions || []).length} perms</span>
+        </div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:8px">${r.description || 'No description'}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${(r.permissions || []).map(p => `<span style="font-size:10px;padding:2px 7px;background:var(--s3);border:1px solid var(--b1);border-radius:3px;color:var(--t2);font-family:'IBM Plex Mono',monospace">${p.name}</span>`).join('')}
+        </div>
+      </div>`).join('');
+    document.getElementById('perms-list').innerHTML = allPerms.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(42,42,42,0.5)">
+        <span class="mono" style="font-size:11px;color:var(--t1)">${p.name}</span>
+        <span style="font-size:11px;color:var(--t3)">${p.description}</span>
+      </div>`).join('');
+    // Update perm checkboxes
+    document.getElementById('perm-checks').innerHTML = allPerms.map(p => `
+      <label style="display:flex;align-items:center;gap:7px;padding:8px 10px;background:var(--s2);border-radius:5px;cursor:pointer;font-size:0">
+        <input type="checkbox" value="${p.id}" name="perm-check" style="width:13px;height:13px;accent-color:var(--acc);flex-shrink:0">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--t1)">${p.name}</span>
+      </label>`).join('');
+  } catch (e) { toast('Failed to load roles', 'error'); }
+}
+
+async function saveRole() {
+  const permIds = [...document.querySelectorAll('input[name="perm-check"]:checked')].map(el => parseInt(el.value));
+  const data = { name: document.getElementById('r-name').value, description: document.getElementById('r-desc').value, permission_ids: permIds };
+  if (!data.name) { toast('Enter role name', 'error'); return; }
+  try {
+    await api('/roles', { method: 'POST', body: JSON.stringify(data) });
+    closeModal('modal-add-role');
+    toast('Role created', 'success');
+    loadRoles();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════
+//  GROUPS
+// ══════════════════════════════════════════════
+async function loadGroups() {
+  try {
+    allGroups = await api('/groups');
+    document.getElementById('groups-grid').innerHTML = allGroups.map(g => `
+      <div class="card">
+        <div style="font-size:15px;font-weight:700;margin-bottom:5px">${g.name}</div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:14px">${g.description || 'No description'}</div>
+        <div class="mono" style="font-size:11px;color:var(--t2)">${(g.users || []).length} members</div>
+      </div>`).join('') || '<div style="color:var(--t3);font-size:13px">No groups yet</div>';
+  } catch (e) { toast('Failed to load groups', 'error'); }
+}
+
+async function saveGroup() {
+  const data = { name: document.getElementById('g-name').value, description: document.getElementById('g-desc').value };
+  if (!data.name) { toast('Enter group name', 'error'); return; }
+  try {
+    await api('/groups', { method: 'POST', body: JSON.stringify(data) });
+    closeModal('modal-add-group');
+    toast('Group created', 'success');
+    loadGroups();
+    document.getElementById('g-name').value = '';
+    document.getElementById('g-desc').value = '';
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════
+//  ACTIVITY LOGS
+// ══════════════════════════════════════════════
+async function loadLogs() {
+  try {
+    const resource = document.getElementById('log-resource').value;
+    const status = document.getElementById('log-status').value;
+    let q = [];
+    if (resource) q.push('resource=' + resource);
+    if (status) q.push('status=' + status);
+    const logs = await api('/logs' + (q.length ? '?' + q.join('&') : ''));
+    document.getElementById('tbl-logs').innerHTML = logs.map(l => `
+      <tr>
+        <td class="mono" style="font-size:11px;color:var(--t3);white-space:nowrap">${fd(l.created_at)}</td>
+        <td>
+          <div style="font-size:12px;font-weight:600">${l.user?.username || 'system'}</div>
+          <div style="font-size:11px;color:var(--t3)">${l.user?.email || ''}</div>
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            ${actIcon(l.action)}
+            <span style="font-size:12px;font-weight:500">${l.action}</span>
+          </div>
+        </td>
+        <td><span class="badge badge-resource" style="font-size:10px">${l.resource}</span>${l.resource_name ? `<span style="font-size:11px;color:var(--t3);margin-left:6px">${l.resource_name}</span>` : ''}</td>
+        <td style="font-size:11px;color:var(--t2);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.detail || '—'}</td>
+        <td><span class="badge ${l.status === 'success' ? 'badge-success' : 'badge-failed'}">${l.status}</span></td>
+        <td class="mono" style="font-size:11px;color:var(--t3)">${l.ip_address || '—'}</td>
+      </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:32px">No logs</td></tr>';
+  } catch (e) { toast('Failed to load logs', 'error'); }
+}
+
+// ══════════════════════════════════════════════
+//  PROFILE
+// ══════════════════════════════════════════════
+function loadProfile() {
+  if (!currentUser) return;
+  document.getElementById('prof-fn').value = currentUser.first_name || '';
+  document.getElementById('prof-ln').value = currentUser.last_name || '';
+  document.getElementById('prof-email').value = currentUser.email || '';
+  document.getElementById('prof-bio').value = currentUser.bio || '';
+  document.getElementById('prof-pw').value = '';
+  document.getElementById('prof-pw2').value = '';
+
+  const fullName = [currentUser.first_name, currentUser.last_name].filter(Boolean).join(' ') || currentUser.username;
+  document.getElementById('profile-display-name').textContent = fullName;
+  document.getElementById('profile-display-username').textContent = '@' + currentUser.username;
+  document.getElementById('profile-since').textContent = fd(currentUser.created_at);
+  document.getElementById('profile-display-roles').innerHTML = (currentUser.roles || []).map(r => roleBadge(r.name)).join(' ');
+
+  const initials = ((currentUser.first_name?.[0] || '') + (currentUser.last_name?.[0] || '') || currentUser.username?.[0] || 'U').toUpperCase();
+  const avatarEl = document.getElementById('profile-avatar-display');
+  if (currentUser.avatar && currentUser.avatar.startsWith('data:')) {
+    avatarEl.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;object-fit:cover">`;
+  } else {
+    avatarEl.textContent = initials;
+    avatarEl.style.fontSize = '36px';
+  }
+}
+
+function handleAvatarUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { toast('Image too large (max 2MB)', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = e.target.result;
+    document.getElementById('profile-avatar-display').innerHTML = `<img src="${data}" style="width:100%;height:100%;object-fit:cover">`;
+    currentUser._pendingAvatar = data;
+    toast('Image ready — click Save Changes to apply', 'info');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveProfile() {
+  const pw = document.getElementById('prof-pw').value;
+  const pw2 = document.getElementById('prof-pw2').value;
+  if (pw && pw !== pw2) { toast('Passwords do not match', 'error'); return; }
+  const payload = {
+    first_name: document.getElementById('prof-fn').value,
+    last_name: document.getElementById('prof-ln').value,
+    email: document.getElementById('prof-email').value,
+    bio: document.getElementById('prof-bio').value,
+  };
+  if (pw) payload.password = pw;
+  if (currentUser._pendingAvatar) payload.avatar = currentUser._pendingAvatar;
+  try {
+    const updated = await api('/auth/profile', { method: 'PUT', body: JSON.stringify(payload) });
+    currentUser = { ...currentUser, ...updated };
+    delete currentUser._pendingAvatar;
+    localStorage.setItem('auth_token', token);
+    updateSidebarUser();
+    loadProfile();
+    toast('Profile updated!', 'success');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════
+//  KEYBOARD + BOOT
+// ══════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') doLogin();
+});
+
+// Patch add product button after DOM loads
+window.addEventListener('load', () => {
+  const btn = document.getElementById('btn-add-product');
+  if (btn) btn.onclick = openAddProduct;
+});
+
+checkAuth();
+</script>
+</body>
+</html>
